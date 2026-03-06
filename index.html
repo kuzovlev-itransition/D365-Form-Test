@@ -34,13 +34,16 @@ button{
 <h2>Test HTML Form</h2>
 
 <form id="leadForm">
-  <input type="text" name="firstname" placeholder="First name">
-  <input type="text" name="lastname" placeholder="Last name">
-  <input type="email" name="email" placeholder="Email">
-  <input type="text" name="mobilephone" placeholder="Phone">
-  <input type="text" name="companyname" placeholder="Company">
-  <input type="text" name="jobtitle" placeholder="Job title">
-  <button type="submit">Submit</button>
+
+<input id="firstname" name="firstname" placeholder="First name">
+<input id="lastname" name="lastname" placeholder="Last name">
+<input id="email" name="email" placeholder="Email">
+<input id="mobilephone" name="mobilephone" placeholder="Phone">
+<input id="companyname" name="companyname" placeholder="Company">
+<input id="jobtitle" name="jobtitle" placeholder="Job title">
+
+<button type="submit">Submit</button>
+
 </form>
 
 
@@ -51,12 +54,12 @@ button{
 d365mktformcapture.waitForElement("#leadForm").then(form => {
 
 const mappings = [
-{ FormFieldName: "firstname", DataverseFieldName: "firstname" },
-{ FormFieldName: "lastname", DataverseFieldName: "lastname" },
-{ FormFieldName: "email", DataverseFieldName: "emailaddress1" },
-{ FormFieldName: "mobilephone", DataverseFieldName: "mobilephone" },
-{ FormFieldName: "companyname", DataverseFieldName: "companyname" },
-{ FormFieldName: "jobtitle", DataverseFieldName: "jobtitle" }
+ { FormFieldName: "#firstname", DataverseFieldName: "firstname" },
+ { FormFieldName: "#lastname", DataverseFieldName: "lastname" },
+ { FormFieldName: "#email", DataverseFieldName: "emailaddress1" },
+ { FormFieldName: "#mobilephone", DataverseFieldName: "mobilephone" },
+ { FormFieldName: "#companyname", DataverseFieldName: "companyname" },
+ { FormFieldName: "#jobtitle", DataverseFieldName: "jobtitle" }
 ];
 
 form.addEventListener("submit", (e) => {
