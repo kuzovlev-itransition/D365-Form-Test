@@ -86,6 +86,8 @@ d365mktformcapture.waitForElement("#leadForm")
 
     const serializedForm = d365mktformcapture.serializeForm(form, mappings);
 
+    console.log(serializedForm);
+
     const payload = serializedForm.SerializedForm.build();
 
     console.log("Payload sent to Dynamics:");
