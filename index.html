@@ -39,6 +39,12 @@
     <input type="text" id="companyname" name="companyname" placeholder="Company">
     <input type="text" id="jobtitle" name="jobtitle" placeholder="Job title">
 
+    <input type="hidden" name="cmf_utm_source" id="utm_source">
+    <input type="hidden" name="cmf_utm_medium" id="utm_medium">
+    <input type="hidden" name="cmf_utm_campaign" id="utm_campaign">
+    <input type="hidden" name="cmf_utm_term" id="utm_term">
+    <input type="hidden" name="cmf_utm_content" id="utm_content">
+
     <button type="submit">Submit</button>
   </form>
 
@@ -46,6 +52,14 @@
 
   <script>
     d365mktformcapture.waitForElement("#leadForm").then((form) => {
+      const params = new URLSearchParams(window.location.search);
+
+      document.getElementById("utm_source").value = params.get("utm_source");
+      document.getElementById("utm_medium").value = params.get("utm_medium");
+      document.getElementById("utm_campaign").value = params.get("utm_campaign");
+      document.getElementById("utm_term").value = params.get("utm_term");
+      document.getElementById("utm_content").value = params.get("utm_content");
+      
       const mappings = [
         {
           FormFieldName: "firstname",
@@ -70,6 +84,26 @@
         {
           FormFieldName: "jobtitle",
           DataverseFieldName: "jobtitle"
+        },
+        {
+           FormFieldName: "cmf_utm_source",
+           DataverseFieldName: "cmf_utm_source"
+        },
+        {
+           FormFieldName: "cmf_utm_medium",
+           DataverseFieldName: "cmf_utm_medium"
+        },
+        {
+           FormFieldName: "cmf_utm_campaign",
+           DataverseFieldName: "cmf_utm_campaign"
+        },
+        {
+           FormFieldName: "cmf_utm_term",
+           DataverseFieldName: "cmf_utm_term"
+        },
+        {
+           FormFieldName: "cmf_utm_content",
+           DataverseFieldName: "cmf_utm_content"
         }
       ];
 
