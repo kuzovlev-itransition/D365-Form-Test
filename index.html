@@ -1,51 +1,87 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>D365 Form Capture Test</title>
+<meta charset="UTF-8">
+<title>D365 Form Capture Test</title>
+
+<style>
+body{
+  font-family: Arial;
+  padding:40px;
+}
+
+form{
+  width:300px;
+}
+
+input{
+  display:block;
+  width:100%;
+  padding:8px;
+  margin-bottom:10px;
+  box-sizing:border-box;
+}
+
+button{
+  padding:8px 12px;
+}
+</style>
+
 </head>
+
 <body>
 
-  <h2>Test HTML Form</h2>
+<h2>Test HTML Form</h2>
 
-  <form id="leadForm">
-    <input type="text" name="firstname" placeholder="First name" />
-    <input type="text" name="lastname" placeholder="Last name" />
-    <input type="email" name="email" placeholder="Email" />
-    <input type="text" name="mobilephone" placeholder="Phone" />
-    <input type="text" name="companyname" placeholder="Company" />
-    <input type="text" name="jobtitle" placeholder="Job title" />
-    <button type="submit">Submit</button>
-  </form>
+<form id="leadForm">
+  <input type="text" name="firstname" placeholder="First name">
+  <input type="text" name="lastname" placeholder="Last name">
+  <input type="email" name="email" placeholder="Email">
+  <input type="text" name="mobilephone" placeholder="Phone">
+  <input type="text" name="companyname" placeholder="Company">
+  <input type="text" name="jobtitle" placeholder="Job title">
+  <button type="submit">Submit</button>
+</form>
 
-  <script src="https://cxppusa1formui01cdnsa01-endpoint.azureedge.net/eur/FormCapture/FormCapture.bundle.js"></script>
-  <script>
-    d365mktformcapture.waitForElement("#leadForm").then(form => {
-      const mappings = [
-        { FormFieldName: "firstname", DataverseFieldName: "firstname" },
-        { FormFieldName: "lastname", DataverseFieldName: "lastname" },
-        { FormFieldName: "email", DataverseFieldName: "emailaddress1" },
-        { FormFieldName: "mobilephone", DataverseFieldName: "mobilephone" },
-        { FormFieldName: "companyname", DataverseFieldName: "companyname" },
-        { FormFieldName: "jobtitle", DataverseFieldName: "jobtitle" }
-      ];
 
-      form.addEventListener("submit", (e) => {
-        e.preventDefault();
+<script src="https://cxppusa1formui01cdnsa01-endpoint.azureedge.net/eur/FormCapture/FormCapture.bundle.js"></script>
 
-        const serializedForm = d365mktformcapture.serializeForm(form, mappings);
-        const payload = serializedForm.SerializedForm.build();
+<script>
 
-        const captureConfig = {
-          FormId: "3b2d6896-2f19-f111-8342-002248a46be3",
-          FormApiUrl: "https://public-eur.mkt.dynamics.com/api/v1.0/orgs/92d36e3e-7511-f111-8c79-000d3ab8d769/landingpageforms"
-        };
+d365mktformcapture.waitForElement("#leadForm").then(form => {
 
-        console.log(payload);
-        d365mktformcapture.submitForm(captureConfig, payload);
-      }, true);
-    });
-  </script>
+const mappings = [
+{ FormFieldName: "firstname", DataverseFieldName: "firstname" },
+{ FormFieldName: "lastname", DataverseFieldName: "lastname" },
+{ FormFieldName: "email", DataverseFieldName: "emailaddress1" },
+{ FormFieldName: "mobilephone", DataverseFieldName: "mobilephone" },
+{ FormFieldName: "companyname", DataverseFieldName: "companyname" },
+{ FormFieldName: "jobtitle", DataverseFieldName: "jobtitle" }
+];
+
+form.addEventListener("submit", (e) => {
+
+e.preventDefault();
+
+const serializedForm = d365mktformcapture.serializeForm(form, mappings);
+
+const payload = serializedForm.SerializedForm.build();
+
+console.log("Payload sent to Dynamics:");
+console.log(payload);
+
+const captureConfig = {
+FormId: "3b2d6896-2f19-f111-8342-002248a46be3",
+FormApiUrl: "https://public-eur.mkt.dynamics.com/api/v1.0/orgs/92d36e3e-7511-f111-8c79-000d3ab8d769/landingpageforms"
+};
+
+d365mktformcapture.submitForm(captureConfig, payload);
+
+}, true);
+
+});
+
+</script>
 
 </body>
 </html>
