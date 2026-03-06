@@ -1,90 +1,116 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8">
-<title>D365 Form Capture Test</title>
+  <meta charset="UTF-8">
+  <title>D365 Form Capture Test</title>
 
-<style>
-body{
-  font-family: Arial;
-  padding:40px;
-}
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
 
-form{
-  width:300px;
-}
+    form {
+      width: 300px;
+    }
 
-input{
-  display:block;
-  width:100%;
-  padding:8px;
-  margin-bottom:10px;
-  box-sizing:border-box;
-}
+    input {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+      box-sizing: border-box;
+    }
 
-button{
-  padding:8px 12px;
-}
-</style>
-
+    button {
+      padding: 8px 12px;
+    }
+  </style>
 </head>
 
 <body>
 
-<h2>Test HTML Form</h2>
+  <h2>Test HTML Form</h2>
 
-<form id="leadForm">
+  <form id="leadForm">
 
-<input id="firstname" name="firstname" placeholder="First name">
-<input id="lastname" name="lastname" placeholder="Last name">
-<input id="email" name="email" placeholder="Email">
-<input id="mobilephone" name="mobilephone" placeholder="Phone">
-<input id="companyname" name="companyname" placeholder="Company">
-<input id="jobtitle" name="jobtitle" placeholder="Job title">
+    <input id="firstname" name="firstname" placeholder="First name">
+    <input id="lastname" name="lastname" placeholder="Last name">
+    <input id="email" name="email" placeholder="Email">
+    <input id="mobilephone" name="mobilephone" placeholder="Phone">
+    <input id="companyname" name="companyname" placeholder="Company">
+    <input id="jobtitle" name="jobtitle" placeholder="Job title">
 
-<button type="submit">Submit</button>
+    <input type="hidden" id="utm_source" name="cmf_utm_source">
+    <input type="hidden" id="utm_medium" name="cmf_utm_medium">
+    <input type="hidden" id="utm_campaign" name="cmf_utm_campaign">
+    <input type="hidden" id="utm_term" name="cmf_utm_term">
+    <input type="hidden" id="utm_content" name="cmf_utm_content">
 
-</form>
+    <button type="submit">Submit</button>
+
+  </form>
 
 
-<script src="https://cxppusa1formui01cdnsa01-endpoint.azureedge.net/eur/FormCapture/FormCapture.bundle.js"></script>
+  <!-- Dynamics Form Capture -->
+  <script src="https://cxppusa1formui01cdnsa01-endpoint.azureedge.net/eur/FormCapture/FormCapture.bundle.js"></script>
 
-<script>
+  <script>
 
-d365mktformcapture.waitForElement("#leadForm").then(form => {
+    d365mktformcapture.waitForElement("#leadForm").then(form => {
 
-const mappings = [
- { FormFieldName: "#firstname", DataverseFieldName: "firstname" },
- { FormFieldName: "#lastname", DataverseFieldName: "lastname" },
- { FormFieldName: "#email", DataverseFieldName: "emailaddress1" },
- { FormFieldName: "#mobilephone", DataverseFieldName: "mobilephone" },
- { FormFieldName: "#companyname", DataverseFieldName: "companyname" },
- { FormFieldName: "#jobtitle", DataverseFieldName: "jobtitle" }
-];
+      const params = new URLSearchParams(window.location.search);
 
-form.addEventListener("submit", (e) => {
+      const utmSource = params.get("utm_source");
+      const utmMedium = params.get("utm_medium");
+      const utmCampaign = params.get("utm_campaign");
+      const utmTerm = params.get("utm_term");
+      const utmContent = params.get("utm_content");
+      
+      document.getElementById("utm_source").value = utmSource;
+      document.getElementById("utm_medium").value = utmMedium;
+      document.getElementById("utm_campaign").value = utmCampaign;
+      document.getElementById("utm_term").value = utmTerm;
+      document.getElementById("utm_content").value = utmContent;
 
-e.preventDefault();
+      const mappings = [
+        { FormFieldName: "#firstname",    DataverseFieldName: "firstname" },
+        { FormFieldName: "#lastname",     DataverseFieldName: "lastname" },
+        { FormFieldName: "#email",        DataverseFieldName: "emailaddress1" },
+        { FormFieldName: "#mobilephone",  DataverseFieldName: "mobilephone" },
+        { FormFieldName: "#companyname",  DataverseFieldName: "companyname" },
+        { FormFieldName: "#jobtitle",     DataverseFieldName: "jobtitle" },
+        { FormFieldName: "#utm_source", DataverseFieldName: "cmf_utm_source" },
+        { FormFieldName: "#utm_medium", DataverseFieldName: "cmf_utm_medium" },
+        { FormFieldName: "#utm_campaign", DataverseFieldName: "cmf_utm_campaign" },
+        { FormFieldName: "#utm_term", DataverseFieldName: "cmf_utm_term" },
+        { FormFieldName: "#utm_content", DataverseFieldName: "cmf_utm_content" }
+      ];
 
-const serializedForm = d365mktformcapture.serializeForm(form, mappings);
 
-const payload = serializedForm.SerializedForm.build();
+      form.addEventListener("submit", (e) => {
 
-console.log("Payload sent to Dynamics:");
-console.log(payload);
+        e.preventDefault();
 
-const captureConfig = {
-FormId: "3b2d6896-2f19-f111-8342-002248a46be3",
-FormApiUrl: "https://public-eur.mkt.dynamics.com/api/v1.0/orgs/92d36e3e-7511-f111-8c79-000d3ab8d769/landingpageforms"
-};
+        const serializedForm = d365mktformcapture.serializeForm(form, mappings);
+        const payload = serializedForm.SerializedForm.build();
 
-d365mktformcapture.submitForm(captureConfig, payload);
+        console.log("Payload sent to Dynamics:");
+        console.log(payload);
 
-}, true);
 
-});
+        const captureConfig = {
+          FormId: "3b2d6896-2f19-f111-8342-002248a46be3",
+          FormApiUrl: "https://public-eur.mkt.dynamics.com/api/v1.0/orgs/92d36e3e-7511-f111-8c79-000d3ab8d769/landingpageforms"
+        };
 
-</script>
+
+        d365mktformcapture.submitForm(captureConfig, payload);
+
+      }, true);
+
+    });
+
+  </script>
 
 </body>
 </html>
