@@ -29,82 +29,68 @@
 
 <body>
 
-<h2>Test HTML Form</h2>
+  <h2>Test HTML Form</h2>
 
-<form id="leadForm">
+  <form id="leadForm">
+    <input type="text" id="firstname" name="firstname" placeholder="First name" required>
+    <input type="text" id="lastname" name="lastname" placeholder="Last name" required>
+    <input type="email" id="email" name="email" placeholder="Email" required>
+    <input type="text" id="mobilephone" name="mobilephone" placeholder="Phone">
+    <input type="text" id="companyname" name="companyname" placeholder="Company">
+    <input type="text" id="jobtitle" name="jobtitle" placeholder="Job title">
 
-  <input id="firstname" name="firstname" placeholder="First name" required>
-  <input id="lastname" name="lastname" placeholder="Last name" required>
-  <input id="email" name="email" placeholder="Email" required>
-  <input id="mobilephone" name="mobilephone" placeholder="Phone">
-  <input id="companyname" name="companyname" placeholder="Company">
-  <input id="jobtitle" name="jobtitle" placeholder="Job title">
+    <button type="submit">Submit</button>
+  </form>
 
-  <button type="submit">Submit</button>
+  <script src="https://cxppusa1formui01cdnsa01-endpoint.azureedge.net/eur/FormCapture/FormCapture.bundle.js"></script>
 
-</form>
+  <script>
+    d365mktformcapture.waitForElement("#leadForm").then((form) => {
+      const mappings = [
+        {
+          FormFieldName: "firstname",
+          DataverseFieldName: "firstname"
+        },
+        {
+          FormFieldName: "lastname",
+          DataverseFieldName: "lastname"
+        },
+        {
+          FormFieldName: "email",
+          DataverseFieldName: "emailaddress1"
+        },
+        {
+          FormFieldName: "mobilephone",
+          DataverseFieldName: "mobilephone"
+        },
+        {
+          FormFieldName: "companyname",
+          DataverseFieldName: "companyname"
+        },
+        {
+          FormFieldName: "jobtitle",
+          DataverseFieldName: "jobtitle"
+        }
+      ];
 
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
 
-<!-- Dynamics Form Capture -->
-<script src="https://cxppusa1formui01cdnsa01-endpoint.azureedge.net/eur/FormCapture/FormCapture.bundle.js"></script>
+        const serializedForm = d365mktformcapture.serializeForm(form, mappings);
+        console.log("Serialized form:", serializedForm);
 
-<script>
+        const payload = serializedForm.SerializedForm.build();
+        console.log("Payload sent to Dynamics:", payload);
 
-d365mktformcapture.waitForElement("#leadForm")
-.then(form => {
+        const captureConfig = {
+          FormId: "5213c6e7-6c19-f111-8342-002248a46be3",
+          FormApiUrl: "https://public-eur.mkt.dynamics.com/api/v1.0/orgs/92d36e3e-7511-f111-8c79-000d3ab8d769/landingpageforms"
+        };
 
-  const mappings = [
-    {
-      FormFieldName: "#firstname",
-      DataverseFieldName: "firstname"
-    },
-    {
-      FormFieldName: "#lastname",
-      DataverseFieldName: "lastname"
-    },
-    {
-      FormFieldName: "#email",
-      DataverseFieldName: "emailaddress1"
-    },
-    {
-      FormFieldName: "#mobilephone",
-      DataverseFieldName: "mobilephone"
-    },
-    {
-      FormFieldName: "#companyname",
-      DataverseFieldName: "companyname"
-    },
-    {
-      FormFieldName: "#jobtitle",
-      DataverseFieldName: "jobtitle"
-    }
-  ];
-
-  form.addEventListener("submit", (e) => {
-
-    e.preventDefault();
-
-    const serializedForm = d365mktformcapture.serializeForm(form, mappings);
-
-    console.log(serializedForm);
-
-    const payload = serializedForm.SerializedForm.build();
-
-    console.log("Payload sent to Dynamics:");
-    console.log(payload);
-
-    const captureConfig = {
-      FormId: "5213c6e7-6c19-f111-8342-002248a46be3",
-      FormApiUrl: "https://public-eur.mkt.dynamics.com/api/v1.0/orgs/92d36e3e-7511-f111-8c79-000d3ab8d769/landingpageforms"
-    };
-
-    d365mktformcapture.submitForm(captureConfig, payload);
-
-  }, true);
-
-});
-
-</script>
+        d365mktformcapture.submitForm(captureConfig, payload);
+      }, true);
+    });
+  </script>
 
 </body>
 </html>
