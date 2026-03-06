@@ -11,7 +11,7 @@
     }
 
     form {
-      width: 300px;
+      width: 320px;
     }
 
     input {
@@ -29,97 +29,80 @@
 
 <body>
 
-  <h2>Test HTML Form</h2>
+<h2>Test HTML Form</h2>
 
-  <form id="leadForm">
+<form id="leadForm">
 
-    <input id="firstname" name="firstname" placeholder="First name">
-    <input id="lastname" name="lastname" placeholder="Last name">
-    <input id="email" name="email" placeholder="Email">
-    <input id="mobilephone" name="mobilephone" placeholder="Phone">
-    <input id="companyname" name="companyname" placeholder="Company">
-    <input id="jobtitle" name="jobtitle" placeholder="Job title">
+  <input id="firstname" name="firstname" placeholder="First name" required>
+  <input id="lastname" name="lastname" placeholder="Last name" required>
+  <input id="email" name="email" placeholder="Email" required>
+  <input id="mobilephone" name="mobilephone" placeholder="Phone">
+  <input id="companyname" name="companyname" placeholder="Company">
+  <input id="jobtitle" name="jobtitle" placeholder="Job title">
 
-    <!-- <input type="hidden" id="utm_source" name="cmf_utm_source">
-    <input type="hidden" id="utm_medium" name="cmf_utm_medium">
-    <input type="hidden" id="utm_campaign" name="cmf_utm_campaign">
-    <input type="hidden" id="utm_term" name="cmf_utm_term">
-    <input type="hidden" id="utm_content" name="cmf_utm_content"> -->
+  <button type="submit">Submit</button>
 
-    <button type="submit">Submit</button>
-
-  </form>
+</form>
 
 
-  <!-- Dynamics Form Capture -->
-  <script src="https://cxppusa1formui01cdnsa01-endpoint.azureedge.net/eur/FormCapture/FormCapture.bundle.js"></script>
+<!-- Dynamics Form Capture -->
+<script src="https://cxppusa1formui01cdnsa01-endpoint.azureedge.net/eur/FormCapture/FormCapture.bundle.js"></script>
 
-  <script>
+<script>
 
-    d365mktformcapture.waitForElement("#leadForm").then(form => {
+d365mktformcapture.waitForElement("#leadForm")
+.then(form => {
 
-      const params = new URLSearchParams(window.location.search);
+  const mappings = [
+    {
+      FormFieldName: "#firstname",
+      DataverseFieldName: "firstname"
+    },
+    {
+      FormFieldName: "#lastname",
+      DataverseFieldName: "lastname"
+    },
+    {
+      FormFieldName: "#email",
+      DataverseFieldName: "emailaddress1"
+    },
+    {
+      FormFieldName: "#mobilephone",
+      DataverseFieldName: "mobilephone"
+    },
+    {
+      FormFieldName: "#companyname",
+      DataverseFieldName: "companyname"
+    },
+    {
+      FormFieldName: "#jobtitle",
+      DataverseFieldName: "jobtitle"
+    }
+  ];
 
-      const utmSource = params.get("utm_source");
-      const utmMedium = params.get("utm_medium");
-      const utmCampaign = params.get("utm_campaign");
-      const utmTerm = params.get("utm_term");
-      const utmContent = params.get("utm_content");
-      
-      // document.getElementById("utm_source").value = utmSource;
-      // document.getElementById("utm_medium").value = utmMedium;
-      // document.getElementById("utm_campaign").value = utmCampaign;
-      // document.getElementById("utm_term").value = utmTerm;
-      // document.getElementById("utm_content").value = utmContent;
+  form.addEventListener("submit", (e) => {
 
-      const mappings = [
-        { FormFieldName: "#firstname",    DataverseFieldName: "firstname" },
-        { FormFieldName: "#lastname",     DataverseFieldName: "lastname" },
-        { FormFieldName: "#email",        DataverseFieldName: "emailaddress1" },
-        { FormFieldName: "#mobilephone",  DataverseFieldName: "mobilephone" },
-        { FormFieldName: "#companyname",  DataverseFieldName: "companyname" },
-        { FormFieldName: "#jobtitle",     DataverseFieldName: "jobtitle" },
-        // { FormFieldName: "#utm_source", DataverseFieldName: "cmf_utm_source" },
-        // { FormFieldName: "#utm_medium", DataverseFieldName: "cmf_utm_medium" },
-        // { FormFieldName: "#utm_campaign", DataverseFieldName: "cmf_utm_campaign" },
-        // { FormFieldName: "#utm_term", DataverseFieldName: "cmf_utm_term" },
-        // { FormFieldName: "#utm_content", DataverseFieldName: "cmf_utm_content" }
-      ];
+    e.preventDefault();
 
-      form.addEventListener("submit", (e) => {
+    const serializedForm = d365mktformcapture.serializeForm(form, mappings);
 
-        e.preventDefault();
+    const payload = serializedForm.SerializedForm.build();
 
-        const serializedForm = d365mktformcapture.serializeForm(form, mappings);
-        console.log("SerializedForm:", serializedForm);
-        
-        const payload = serializedForm.SerializedForm.build();
+    console.log("Payload sent to Dynamics:");
+    console.log(payload);
 
-        console.log("Payload sent to Dynamics:");
-        console.log(payload);
+    const captureConfig = {
+      FormId: "5213c6e7-6c19-f111-8342-002248a46be3",
+      FormApiUrl: "https://public-eur.mkt.dynamics.com/api/v1.0/orgs/92d36e3e-7511-f111-8c79-000d3ab8d769/landingpageforms"
+    };
 
-        // console.log("UTM values in DOM", {
-        //   utm_source: document.getElementById("utm_source").value,
-        //   utm_medium: document.getElementById("utm_medium").value,
-        //   utm_campaign: document.getElementById("utm_campaign").value,
-        //   utm_term: document.getElementById("utm_term").value,
-        //   utm_content: document.getElementById("utm_content").value
-        // });
+    d365mktformcapture.submitForm(captureConfig, payload);
 
+  }, true);
 
-        const captureConfig = {
-          FormId: "3b2d6896-2f19-f111-8342-002248a46be3",
-          FormApiUrl: "https://public-eur.mkt.dynamics.com/api/v1.0/orgs/92d36e3e-7511-f111-8c79-000d3ab8d769/landingpageforms"
-        };
+});
 
-
-        d365mktformcapture.submitForm(captureConfig, payload);
-
-      }, false);
-
-    });
-
-  </script>
+</script>
 
 </body>
 </html>
