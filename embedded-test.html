@@ -25,11 +25,8 @@ Reload with UTM
 
 <script src="https://cxppusa1formui01cdnsa01-endpoint.azureedge.net/eur/FormLoader/FormLoader.bundle.js"></script>
 
-
 <script>
-
 (function() {
-  // 1. Read UTM params from URL
   function getUTMs() {
     const params = new URLSearchParams(window.location.search);
     return {
@@ -41,13 +38,11 @@ Reload with UTM
     };
   }
 
-  // 2. Only continue if at least one REAL UTM exists
   function hasRealUTM(utms) {
     return ["utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content"]
       .some(k => utms[k] !== "");
   }
 
-  // 3. Mapping → UTM parameter → D365 hidden field name
   const fieldMap = {
     utm_source: "cr994_utm_source",
     utm_medium: "cr994_utm_medium",
@@ -56,10 +51,25 @@ Reload with UTM
     utm_content: "cr994_utm_content"
   };
 
-  // 4. Fill hidden fields inside a form document
+  function debugFields(formDoc, label) {
+    const result = Object.values(fieldMap).map(name => {
+      const el = formDoc.querySelector(`[name="${name}"]`);
+      return {
+        name,
+        found: !!el,
+        value: el ? el.value : null
+      };
+    });
+
+    console.log(label, result);
+  }
+
   function fillUTMFields(formDoc) {
     const utms = getUTMs();
-    if (!formDoc || !hasRealUTM(utms)) return false;
+    if (!formDoc || !hasRealUTM(utms)) {
+      console.log("fillUTMFields skipped", { hasDoc: !!formDoc, utms });
+      return false;
+    }
 
     let filled = false;
 
@@ -67,21 +77,35 @@ Reload with UTM
       const selector = `[name="${fieldMap[key]}"]`;
       const input = formDoc.querySelector(selector);
 
-      if (input && utms[key]) {
+      if (!input) {
+        console.log("Field not found:", selector);
+        return;
+      }
+
+      if (utms[key]) {
         input.value = utms[key];
-        input.dispatchEvent(new Event("change", {
-          bubbles: true
-        }));
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+        input.dispatchEvent(new Event("change", { bubbles: true }));
+
+        console.log("Filled:", fieldMap[key], "→", utms[key]);
         filled = true;
       }
     });
 
+    debugFields(formDoc, "After fill");
+
     return filled;
   }
 
-  // 5. Retry logic to ensure fields are filled when form loads slowly
   function tryFill(formDoc, attempts = 8) {
-    if (attempts <= 0) return;
+    console.log("tryFill attempt:", attempts);
+
+    if (attempts <= 0) {
+      console.log("tryFill stopped");
+      return;
+    }
+
+    debugFields(formDoc, "Before fill");
 
     const success = fillUTMFields(formDoc);
 
@@ -90,34 +114,38 @@ Reload with UTM
     }
   }
 
-  // 6. When form loads INSIDE Dynamics (no iframe)
   document.addEventListener("d365mkt-afterformload", () => {
+    console.log("d365mkt-afterformload fired on document");
     tryFill(document);
   });
 
-  // 7. When form loads inside an EMBED iframe
   window.addEventListener("message", event => {
     if (event.data?.type === "d365mkt-afterformload") {
+      console.log("message afterformload fired", event.data);
 
-      // Try to locate the iframe safely (Cross-browser compatible)
       let iframe = document.querySelector("iframe[src*='dynamics'], iframe[src*='forms.microsoft.com']");
 
       if (iframe) {
         try {
           const iframeDoc = iframe.contentWindow.document;
+          console.log("Using iframe document");
           tryFill(iframeDoc);
           return;
         } catch (e) {
-          // If Firefox/Edge block access → fallback
+          console.log("iframe access failed, fallback to document", e);
         }
       }
 
-      // Fallback: fill on parent if iframe not accessible
+      console.log("Using parent document fallback");
       tryFill(document);
     }
   });
-})();
 
+  document.addEventListener("submit", function(e) {
+    console.log("Submit fired", e.target);
+    debugFields(document, "At submit (document)");
+  }, true);
+})();
 </script>
 
 </body>
