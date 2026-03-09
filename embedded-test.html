@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>D365 Embedded Form Test</title>
+</head>
+
+<body>
+
+<h2>D365 Embedded Form Test</h2>
+
+<p>
+<a href="?utm_source=google&utm_medium=cpc&utm_campaign=test_campaign&utm_term=test_term&utm_content=test_content">
+Reload with UTM
+</a>
+</p>
+
+<hr>
+
+<div
+  data-form-id="5213c6e7-6c19-f111-8342-002248a46be3"
+  data-form-api-url="https://public-eur.mkt.dynamics.com/api/v1.0/orgs/92d36e3e-7511-f111-8c79-000d3ab8d769/landingpageforms"
+  data-cached-form-url="https://assets-eur.mkt.dynamics.com/92d36e3e-7511-f111-8c79-000d3ab8d769/digitalassets/forms/5213c6e7-6c19-f111-8342-002248a46be3">
+</div>
+
+<script src="https://cxppusa1formui01cdnsa01-endpoint.azureedge.net/eur/FormLoader/FormLoader.bundle.js"></script>
+
+
+<script>
+
+function getUTMs() {
+  const params = new URLSearchParams(window.location.search);
+  return {
+    utm_source: params.get("utm_source") || "",
+    utm_medium: params.get("utm_medium") || "",
+    utm_campaign: params.get("utm_campaign") || "",
+    utm_term: params.get("utm_term") || "",
+    utm_content: params.get("utm_content") || ""
+  };
+}
+
+console.log("UTM values:", getUTMs());
+
+
+document.addEventListener("d365mkt-afterformload", () => {
+
+  console.log("FORM LOADED");
+
+  const names = [
+    "cmf_utm_source",
+    "cmf_utm_medium",
+    "cmf_utm_campaign",
+    "cmf_utm_term",
+    "cmf_utm_content"
+  ];
+
+  names.forEach(name => {
+    const el = document.querySelector(`[name="${name}"]`);
+    console.log(name, el ? "FOUND" : "NOT FOUND", el?.value);
+  });
+
+});
+
+</script>
+
+</body>
+</html>
