@@ -28,38 +28,95 @@ Reload with UTM
 
 <script>
 
-function getUTMs() {
-  const params = new URLSearchParams(window.location.search);
-  return {
-    utm_source: params.get("utm_source") || "",
-    utm_medium: params.get("utm_medium") || "",
-    utm_campaign: params.get("utm_campaign") || "",
-    utm_term: params.get("utm_term") || "",
-    utm_content: params.get("utm_content") || ""
+(function() {
+  // 1. Read UTM params from URL
+  function getUTMs() {
+    const params = new URLSearchParams(window.location.search);
+    return {
+      utm_source: params.get("utm_source") || "",
+      utm_medium: params.get("utm_medium") || "",
+      utm_campaign: params.get("utm_campaign") || "",
+      utm_term: params.get("utm_term") || "",
+      utm_content: params.get("utm_content") || ""
+    };
+  }
+
+  // 2. Only continue if at least one REAL UTM exists
+  function hasRealUTM(utms) {
+    return ["utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content"]
+      .some(k => utms[k] !== "");
+  }
+
+  // 3. Mapping → UTM parameter → D365 hidden field name
+  const fieldMap = {
+    utm_source: "cr994_utm_source",
+    utm_medium: "cr994_utm_medium",
+    utm_campaign: "cr994_utm_campaign",
+    utm_term: "cr994_utm_term",
+    utm_content: "cr994_utm_content"
   };
-}
 
-console.log("UTM values:", getUTMs());
+  // 4. Fill hidden fields inside a form document
+  function fillUTMFields(formDoc) {
+    const utms = getUTMs();
+    if (!formDoc || !hasRealUTM(utms)) return false;
 
+    let filled = false;
 
-document.addEventListener("d365mkt-afterformload", () => {
+    Object.keys(fieldMap).forEach(key => {
+      const selector = `[name="${fieldMap[key]}"]`;
+      const input = formDoc.querySelector(selector);
 
-  console.log("FORM LOADED");
+      if (input && utms[key]) {
+        input.value = utms[key];
+        input.dispatchEvent(new Event("change", {
+          bubbles: true
+        }));
+        filled = true;
+      }
+    });
 
-  const names = [
-    "cmf_utm_source",
-    "cmf_utm_medium",
-    "cmf_utm_campaign",
-    "cmf_utm_term",
-    "cmf_utm_content"
-  ];
+    return filled;
+  }
 
-  names.forEach(name => {
-    const el = document.querySelector(`[name="${name}"]`);
-    console.log(name, el ? "FOUND" : "NOT FOUND", el?.value);
+  // 5. Retry logic to ensure fields are filled when form loads slowly
+  function tryFill(formDoc, attempts = 8) {
+    if (attempts <= 0) return;
+
+    const success = fillUTMFields(formDoc);
+
+    if (!success) {
+      setTimeout(() => tryFill(formDoc, attempts - 1), 350);
+    }
+  }
+
+  // 6. When form loads INSIDE Dynamics (no iframe)
+  document.addEventListener("d365mkt-afterformload", () => {
+    tryFill(document);
   });
 
-});
+  // 7. When form loads inside an EMBED iframe
+  window.addEventListener("message", event => {
+    if (event.data?.type === "d365mkt-afterformload") {
+
+      // Try to locate the iframe safely (Cross-browser compatible)
+      let iframe = document.querySelector("iframe[src*='dynamics'], iframe[src*='forms.microsoft.com']");
+
+      if (iframe) {
+        try {
+          const iframeDoc = iframe.contentWindow.document;
+          tryFill(iframeDoc);
+          return;
+        } catch (e) {
+          // If Firefox/Edge block access → fallback
+        }
+      }
+
+      // Fallback: fill on parent if iframe not accessible
+      tryFill(document);
+    }
+  });
+})();
 
 </script>
 
