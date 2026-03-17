@@ -1,1 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>D365 Embedded Fail Form Test</title>
+</head>
 
+<body>
+
+<h2>D365 Embedded Fail Form Test</h2>
+
+<p>
+<a href="?utm_source=google&utm_medium=cpc&utm_campaign=test_campaign&utm_term=test_term&utm_content=test_content">
+Reload with UTM
+</a>
+</p>
+
+<hr>
+
+<div
+  data-form-id='63b814c8-1c22-f111-8342-002248a46be3'
+  data-form-api-url='https://public-eur.mkt.dynamics.com/api/v1.0/orgs/92d36e3e-7511-f111-8c79-000d3ab8d769/landingpageforms'
+  data-cached-form-url='https://assets-eur.mkt.dynamics.com/92d36e3e-7511-f111-8c79-000d3ab8d769/digitalassets/forms/63b814c8-1c22-f111-8342-002248a46be3' >
+</div>
+        
+<script src = 'https://cxppusa1formui01cdnsa01-endpoint.azureedge.net/eur/FormLoader/FormLoader.bundle.js' ></script>
+
+
+<script>
+(function() {
+  function getUTMs() {
+    const params = new URLSearchParams(window.location.search);
+    return {
+      utm_source: params.get("utm_source") || "",
+      utm_medium: params.get("utm_medium") || "",
+      utm_campaign: params.get("utm_campaign") || "",
+      utm_term: params.get("utm_term") || "",
+      utm_content: params.get("utm_content") || ""
+    };
+  }
+
+  function hasRealUTM(utms) {
+    return ["utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content"]
+      .some(k => utms[k] !== "");
+  }
+
+  const fieldMap = {
+    utm_source: "cr994_utm_source",
+    utm_medium: "cr994_utm_medium",
+    utm_campaign: "cr994_utm_campaign",
+    utm_term: "cr994_utm_term",
+    utm_content: "cr994_utm_content"
+  };
+
+  function debugFields(formDoc, label) {
+    const result = Object.values(fieldMap).map(name => {
+      const el = formDoc.querySelector(`[name="${name}"]`);
+      return {
+        name,
+        found: !!el,
+        value: el ? el.value : null
+      };
+    });
+
+    console.log(label, result);
+  }
+
+  function fillUTMFields(formDoc) {
+    const utms = getUTMs();
+    if (!formDoc || !hasRealUTM(utms)) {
+      console.log("fillUTMFields skipped", { hasDoc: !!formDoc, utms });
+      return false;
+    }
+
+    let filled = false;
+
+    Object.keys(fieldMap).forEach(key => {
+      const selector = `[name="${fieldMap[key]}"]`;
+      const input = formDoc.querySelector(selector);
+
+      if (!input) {
+        console.log("Field not found:", selector);
+        return;
+      }
+
+      if (utms[key]) {
+        input.value = utms[key];
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+        input.dispatchEvent(new Event("change", { bubbles: true }));
+
+        console.log("Filled:", fieldMap[key], "→", utms[key]);
+        filled = true;
+      }
+    });
+
+    debugFields(formDoc, "After fill");
+
+    return filled;
+  }
+
+  function tryFill(formDoc, attempts = 8) {
+    console.log("tryFill attempt:", attempts);
+
+    if (attempts <= 0) {
+      console.log("tryFill stopped");
+      return;
+    }
+
+    debugFields(formDoc, "Before fill");
+
+    const success = fillUTMFields(formDoc);
+
+    if (!success) {
+      setTimeout(() => tryFill(formDoc, attempts - 1), 350);
+    }
+  }
+
+  document.addEventListener("d365mkt-afterformload", () => {
+    console.log("d365mkt-afterformload fired on document");
+    tryFill(document);
+  });
+
+  window.addEventListener("message", event => {
+    if (event.data?.type === "d365mkt-afterformload") {
+      console.log("message afterformload fired", event.data);
+
+      let iframe = document.querySelector("iframe[src*='dynamics'], iframe[src*='forms.microsoft.com']");
+
+      if (iframe) {
+        try {
+          const iframeDoc = iframe.contentWindow.document;
+          console.log("Using iframe document");
+          tryFill(iframeDoc);
+          return;
+        } catch (e) {
+          console.log("iframe access failed, fallback to document", e);
+        }
+      }
+
+      console.log("Using parent document fallback");
+      tryFill(document);
+    }
+  });
+
+  document.addEventListener("submit", function(e) {
+    console.log("Submit fired", e.target);
+    debugFields(document, "At submit (document)");
+  }, true);
+})();
+</script>
+
+</body>
+</html>
