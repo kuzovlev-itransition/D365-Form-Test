@@ -31,10 +31,7 @@
 
   <h2>Test HTML Form</h2>
 
-  <a href="/embedded-test.html">
-    Open Embedded Form Test
-  </a>
-
+  <a href="/embedded-test.html">Open Embedded Form Test</a><br>
   <a href="/embedded-fail-test.html">
     Open Embedded Form created by user without Lead creating permission
   </a>
@@ -42,7 +39,10 @@
   <form id="leadForm">
     <input type="text" id="firstname" name="firstname" placeholder="First name" required>
     <input type="text" id="lastname" name="lastname" placeholder="Last name" required>
-    <input type="email" id="email" name="email" placeholder="Email" required>
+
+    <!-- autocapitalize важно для мобильных -->
+    <input type="email" id="email" name="email" placeholder="Email" required autocapitalize="off">
+
     <input type="text" id="mobilephone" name="mobilephone" placeholder="Phone">
     <input type="text" id="companyname" name="companyname" placeholder="Company">
     <input type="text" id="jobtitle" name="jobtitle" placeholder="Job title">
@@ -60,6 +60,8 @@
 
   <script>
     d365mktformcapture.waitForElement("#leadForm").then((form) => {
+
+      // ===== UTM params =====
       const params = new URLSearchParams(window.location.search);
 
       document.getElementById("utm_source").value = params.get("utm_source");
@@ -67,56 +69,35 @@
       document.getElementById("utm_campaign").value = params.get("utm_campaign");
       document.getElementById("utm_term").value = params.get("utm_term");
       document.getElementById("utm_content").value = params.get("utm_content");
-      
+
+      // ===== EMAIL NORMALIZATION (on input) =====
+      const emailInput = document.getElementById("email");
+      emailInput.addEventListener("input", () => {
+        emailInput.value = emailInput.value.toLowerCase();
+      });
+
+      // ===== FIELD MAPPINGS =====
       const mappings = [
-        {
-          FormFieldName: "firstname",
-          DataverseFieldName: "firstname"
-        },
-        {
-          FormFieldName: "lastname",
-          DataverseFieldName: "lastname"
-        },
-        {
-          FormFieldName: "email",
-          DataverseFieldName: "emailaddress1"
-        },
-        {
-          FormFieldName: "mobilephone",
-          DataverseFieldName: "mobilephone"
-        },
-        {
-          FormFieldName: "companyname",
-          DataverseFieldName: "companyname"
-        },
-        {
-          FormFieldName: "jobtitle",
-          DataverseFieldName: "jobtitle"
-        },
-        {
-            FormFieldName: "cmf_utm_source",
-            DataverseFieldName: "cr994_utm_source",
-        },
-        {
-            FormFieldName: "cmf_utm_medium",
-            DataverseFieldName: "cr994_utm_medium",
-        },
-        {
-            FormFieldName: "cmf_utm_campaign",
-            DataverseFieldName: "cr994_utm_campaign",
-        },
-        {
-            FormFieldName: "cmf_utm_term",
-            DataverseFieldName: "cr994_utm_term",
-        },
-        {
-            FormFieldName: "cmf_utm_content",
-            DataverseFieldName: "cr994_utm_content",
-        }
+        { FormFieldName: "firstname", DataverseFieldName: "firstname" },
+        { FormFieldName: "lastname", DataverseFieldName: "lastname" },
+        { FormFieldName: "email", DataverseFieldName: "emailaddress1" },
+        { FormFieldName: "mobilephone", DataverseFieldName: "mobilephone" },
+        { FormFieldName: "companyname", DataverseFieldName: "companyname" },
+        { FormFieldName: "jobtitle", DataverseFieldName: "jobtitle" },
+
+        { FormFieldName: "cmf_utm_source", DataverseFieldName: "cr994_utm_source" },
+        { FormFieldName: "cmf_utm_medium", DataverseFieldName: "cr994_utm_medium" },
+        { FormFieldName: "cmf_utm_campaign", DataverseFieldName: "cr994_utm_campaign" },
+        { FormFieldName: "cmf_utm_term", DataverseFieldName: "cr994_utm_term" },
+        { FormFieldName: "cmf_utm_content", DataverseFieldName: "cr994_utm_content" }
       ];
 
       form.addEventListener("submit", (e) => {
         e.preventDefault();
+
+        if (emailInput.value) {
+          emailInput.value = emailInput.value.toLowerCase().trim();
+        }
 
         const serializedForm = d365mktformcapture.serializeForm(form, mappings);
         console.log("Serialized form:", serializedForm);
